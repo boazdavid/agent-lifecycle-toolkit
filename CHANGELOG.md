@@ -2,6 +2,17 @@
 
 <!-- version list -->
 
+## v0.4.2 (2025-11-12)
+
+### Documentation
+
+- Minor fixes ([#38](https://github.com/AgentToolkit/agent-lifecycle-toolkit/pull/38),
+  [`0085240`](https://github.com/AgentToolkit/agent-lifecycle-toolkit/commit/0085240cc2308297fa489c05ce01a01130c026ee))
+
+- Update integrations. ([#40](https://github.com/AgentToolkit/agent-lifecycle-toolkit/pull/40),
+  [`e2d8440`](https://github.com/AgentToolkit/agent-lifecycle-toolkit/commit/e2d84400c0e37e31f1e8fad7b228bdb76d3649a2))
+
+
 ## v0.4.1 (2025-10-25)
 
 ### Documentation
