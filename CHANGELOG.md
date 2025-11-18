@@ -2,6 +2,15 @@
 
 <!-- version list -->
 
+## v0.6.1 (2025-11-18)
+
+### Bug Fixes
+
+- Stop ignoring nested build folders
+  ([#68](https://github.com/AgentToolkit/agent-lifecycle-toolkit/pull/68),
+  [`005d114`](https://github.com/AgentToolkit/agent-lifecycle-toolkit/commit/005d1143004ae194e1d9db51571ccf0bfea4fdcc))
+
+
 ## v0.6.0 (2025-11-18)
 
 ### Chores
