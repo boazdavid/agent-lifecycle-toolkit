@@ -2,6 +2,15 @@
 
 <!-- version list -->
 
+## v0.7.0 (2025-11-18)
+
+### Chores
+
+- Rename build lifecycle stage to build_time
+  ([#69](https://github.com/AgentToolkit/agent-lifecycle-toolkit/pull/69),
+  [`39bb7b8`](https://github.com/AgentToolkit/agent-lifecycle-toolkit/commit/39bb7b81fc3589f99efb7f847f7e298c9e92aaba))
+
+
 ## v0.6.1 (2025-11-18)
 
 ### Bug Fixes
