@@ -6,9 +6,10 @@
 <h4 align="center">Delivering plug-and-play, framework-agnostic technology to boost agents' performance</h4>
 
 ## What is ALTK?
-The Agent Lifecycle Toolkit helps agent builders create better performing agents by easily integrating our components into agent pipelines. The components help improve the performance of agents by addressing key gaps in various stages of the agent lifecycle, such as in reasoning, or tool calling errors, or output guardrails.
+The Agent Lifecycle Toolkit helps agent builders create better performing agents by easily integrating our components into agent pipelines. The components help improve the performance of agents by addressing key gaps in various stages of the agent lifecycle, such as in reasoning, or tool calling errors, or output guardrails. 
 
-![lifecycle.png](https://github.com/AgentToolkit/agent-lifecycle-toolkit/raw/main/docs/assets/lifecycle.png)
+👉 Read the launch [blog](https://research.ibm.com/blog/altk-agent-toolkit?previewToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTEsImlhdCI6MTc2MTc1MTg3MiwiZXhwIjoxNzYyMDExMDcyLCJzdWIiOiI0NTYwIn0.jfBYD6cOFSJXw0ZFPziCtGExsIvlc9uFp433KdO1CDE) to learn more about the vision and capabilities.
+
 
 
 ## Installation
@@ -78,8 +79,8 @@ print(result["messages"][-1].content)
 <!-- [TODO: add link] -->
 
 ## Features
-<!--
-[TODO: move up in the order of sections?] -->
+![lifecycle.png](https://github.com/AgentToolkit/agent-lifecycle-toolkit/raw/main/docs/assets/lifecycle.png)
+
 
 | Lifecycle Stage | Component                                                              | Purpose                                                                                                                                                                                                                                                                                                                   |
 |-----------------|------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|

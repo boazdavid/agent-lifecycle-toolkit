@@ -162,3 +162,7 @@ ToolGuardRunInput(
 ToolGuardRunOutput(output=ToolGuardRunOutputMetaData(error_message=False))
 ```
 `error_message` is either `False` (valid) or a descriptive violation message.
+
+## License
+Apache 2.0 - see LICENSE file for details.
+
