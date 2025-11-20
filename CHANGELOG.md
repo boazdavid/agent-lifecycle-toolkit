@@ -2,6 +2,15 @@
 
 <!-- version list -->
 
+## v0.7.1 (2025-11-20)
+
+### Bug Fixes
+
+- Update from parse method to create method
+  ([#66](https://github.com/AgentToolkit/agent-lifecycle-toolkit/pull/66),
+  [`df2be54`](https://github.com/AgentToolkit/agent-lifecycle-toolkit/commit/df2be548dc240e338e601bad3ac603b37ef84db7))
+
+
 ## v0.7.0 (2025-11-18)
 
 ### Chores
