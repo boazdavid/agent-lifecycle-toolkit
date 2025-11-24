@@ -2,6 +2,19 @@
 
 <!-- version list -->
 
+## v0.8.0 (2025-11-24)
+
+### Chores
+
+- Group dependencies by lifecycle
+  ([#72](https://github.com/AgentToolkit/agent-lifecycle-toolkit/pull/72),
+  [`d0d9ec3`](https://github.com/AgentToolkit/agent-lifecycle-toolkit/commit/d0d9ec305552cbbb7bf8f490bc0a81bf29e6433f))
+
+### Breaking Changes
+
+- If you need to use a package you need to install the lifecycle stage it's a part of as an extra.
+
+
 ## v0.7.1 (2025-11-20)
 
 ### Bug Fixes
