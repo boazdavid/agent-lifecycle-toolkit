@@ -215,7 +215,7 @@ parse_squash_commits = true
 ignore_merge_commits = true
 
 [tool.semantic_release.branches.main]
-match = "(main|master)"
+match = "(main|master|for_langflow_0_4_3)"
 prerelease_token = "rc"
 prerelease = false
 
