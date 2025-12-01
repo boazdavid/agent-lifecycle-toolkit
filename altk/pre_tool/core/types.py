@@ -1,14 +1,27 @@
-from typing import List, Optional, Dict, Any, Union
+from typing import List, Optional, Dict, Any, Union, TYPE_CHECKING
 from pydantic import BaseModel, Field, ConfigDict
 from enum import Enum
 
 from altk.core.llm import LLMClient
 from altk.core.toolkit import ComponentInput, ComponentOutput
-from altk.pre_tool.refraction.src.schemas.results import (
-    DebuggingResult,
-)
-from altk.pre_tool.refraction.src.schemas.mappings import Mapping
-from nestful.schemas.api import Catalog
+
+if TYPE_CHECKING:
+    from altk.pre_tool.refraction.src.schemas.results import (
+        DebuggingResult,
+    )
+    from altk.pre_tool.refraction.src.schemas.mappings import Mapping
+    from nestful.schemas.api import Catalog
+else:
+    try:
+        from altk.pre_tool.refraction.src.schemas.results import (
+            DebuggingResult,
+        )
+        from altk.pre_tool.refraction.src.schemas.mappings import Mapping
+        from nestful.schemas.api import Catalog
+    except ImportError:
+        DebuggingResult = Any
+        Mapping = Any
+        Catalog = Any
 
 
 class SPARCReflectionDecision(str, Enum):
