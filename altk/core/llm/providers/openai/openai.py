@@ -307,7 +307,7 @@ class SyncOpenAIClientOutputVal(BaseValidatingOpenAIClient, ValidatingLLMClient)
         self,
         prompt: Union[str, List[Dict[str, str]]],
         schema: Optional[Any] = None,
-        schema_field: Optional[str] = "response_format",
+        schema_field: Optional[str] = None,
         retries: int = 3,
         **kwargs: Any,
     ) -> Union[str, LLMResponse]:
