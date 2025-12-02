@@ -3,10 +3,10 @@ from pathlib import Path
 from typing import Callable, List
 from os.path import join
 
-from altk.pre_tool.toolguard.toolguard.gen_py.api_extractor import APIExtractor
-from altk.pre_tool.toolguard.toolguard.common.str import to_camel_case, to_snake_case
-from altk.pre_tool.toolguard.toolguard.data_types import FileTwin, RuntimeDomain
-import altk.pre_tool.toolguard.toolguard.gen_py.consts as consts
+from .api_extractor import APIExtractor
+from ..common.str import to_camel_case, to_snake_case
+from ..data_types import FileTwin, RuntimeDomain
+from . import consts
 
 
 def generate_domain_from_functions(
@@ -20,9 +20,9 @@ def generate_domain_from_functions(
         py_path, join(consts.RUNTIME_PACKAGE_NAME, consts.RUNTIME_TYPES_PY)
     )
     runtime = FileTwin.load_from(root, "runtime.py")
-    runtime.content = runtime.content.replace(
-        "toolguard.", f"{consts.RUNTIME_PACKAGE_NAME}."
-    )
+    # runtime.content = runtime.content.replace(
+    #     "toolguard.", f"{consts.RUNTIME_PACKAGE_NAME}."
+    # )
     runtime.save_as(py_path, join(consts.RUNTIME_PACKAGE_NAME, consts.RUNTIME_INIT_PY))
 
     # APP init and Types

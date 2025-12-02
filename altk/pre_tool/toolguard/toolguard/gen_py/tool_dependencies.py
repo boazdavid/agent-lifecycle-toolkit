@@ -1,17 +1,15 @@
 import asyncio
 import re
 from typing import Set
-from altk.pre_tool.toolguard.toolguard.data_types import Domain, ToolPolicyItem
 from mellea.backends.types import ModelOption
-from altk.pre_tool.toolguard.toolguard.gen_py.prompts.pseudo_code import (
-    tool_policy_pseudo_code,
-)
+from ..data_types import Domain, ToolGuardSpecItem
+from prompts.pseudo_code import tool_policy_pseudo_code
 
 MAX_TRIALS = 3
 
 
 async def tool_dependencies(
-    policy_item: ToolPolicyItem, tool_signature: str, domain: Domain, trial=0
+    policy_item: ToolGuardSpecItem, tool_signature: str, domain: Domain, trial=0
 ) -> Set[str]:
     model_options = {ModelOption.TEMPERATURE: 0.8}
     pseudo_code = await asyncio.to_thread(  # FIXME when melea will support aysnc

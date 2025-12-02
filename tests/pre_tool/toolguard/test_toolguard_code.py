@@ -1,0 +1,205 @@
+"""
+End-to-end test for ToolGuard code generation & runtime evaluation
+using a set of arithmetic tools.
+
+This test:
+1. Loads tool policies
+2. Generates guard code
+3. Runs the guards in runtime mode
+4. Verifies correct functionality and violations
+"""
+
+from datetime import datetime
+import os
+from pathlib import Path
+import shutil
+from typing import Dict, cast
+
+import dotenv
+import pytest
+
+from altk.pre_tool_guard_toolkit import (
+    ToolGuardCodeComponent,
+    ToolGuardCodeBuildInput,
+)
+from altk.pre_tool_guard_toolkit.toolguard.data_types import (
+    MeleaSessionData,
+    load_tool_policy,
+)
+from altk.pre_tool_guard_toolkit.toolguard.runtime import (
+    ToolFunctionsInvoker,
+    ToolGuardsCodeGenerationResult,
+    load_toolguard_code_result,
+)
+from altk.pre_tool_guard_toolkit.toolguard_code_component import (
+    ToolGuardCodeComponentConfig,
+    ToolGuardCodeRunInput,
+    ToolGuardCodeRunOutput,
+    ViolationLevel,
+)
+from altk.toolkit_core.core.toolkit import AgentPhase
+
+# The calculator tools under test
+from .inputs.tool_functions import (
+    divide_tool,
+    add_tool,
+    multiply_tool,
+    subtract_tool,
+    map_kdi_number,
+)
+
+# Load environment variables
+dotenv.load_dotenv()
+
+
+# ---------------------------------------------------------------------------
+# Fixtures
+# ---------------------------------------------------------------------------
+
+@pytest.fixture
+def work_dir():
+    """Creates a temporary folder for test output and cleans it afterward."""
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    dir_path = str(Path(__file__).parent / "outputs" / f"work_{timestamp}")
+    print("Temporary work dir created:", dir_path)
+
+    yield dir_path
+
+    shutil.rmtree(dir_path)
+    print("Temporary work dir removed:", dir_path)
+
+
+# ---------------------------------------------------------------------------
+# Test: ToolGuard verification for the calculator tool set
+# ---------------------------------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_tool_guard_calculator_policy(work_dir: str):
+    # Tools to be guarded
+    funcs = [divide_tool, add_tool, multiply_tool, subtract_tool, map_kdi_number]
+
+    # Configure Melea session used in ToolGuard LLM
+    # see https://docs.mellea.ai/api-reference/core-library/stdlib/mellea-stdlib-session#start-session
+    backend_name = "openai" #"ollama", "hf", "openai", "watsonx", "litellm"
+    model_id = "GCP/claude-4-sonnet"
+    kw_args = {
+        "api_key": os.getenv("TOOLGUARD_GENPY_APIKEY"),
+        "base_url": "https://ete-litellm.bx.cloud9.ibm.com",
+    }
+
+    # Build ToolGuard component
+    toolguard_code = ToolGuardCodeComponent(
+        ToolGuardCodeComponentConfig(
+            llm_config=MeleaSessionData(
+                backend_name=backend_name,
+                model_id=model_id,
+                kw_args=kw_args,
+            )
+        )
+    )
+
+    # Load policy JSON files from /step1
+    policy_dir = Path(__file__).parent / "inputs" / "step1"
+    specs = [
+        load_tool_policy(str(policy_dir / f"{tool.__name__}.json"), tool.__name__)
+        for tool in funcs
+    ]
+
+    # Prepare build input for guard code generation
+    input = ToolGuardCodeBuildInput(
+        tools=funcs,
+        out_dir=work_dir,
+        toolguard_specs=specs,
+    )
+
+    #Toolguarg code generation
+    build_output = cast(ToolGuardsCodeGenerationResult,
+                  await toolguard_code.aprocess(input, AgentPhase.BUILDTIME))
+    # output = load_toolguard_code_result(work_dir)
+
+    # Expected guarded tools
+    expected_tools = ["multiply_tool", "divide_tool", "add_tool"]
+
+    # Basic structure assertions
+    assert build_output.root_dir
+    assert build_output.domain
+    assert len(build_output.tools) == len(expected_tools)
+
+    # Validate guard components for each tool
+    for tool_name in expected_tools:
+        result = build_output.tools[tool_name]
+
+        assert len(result.tool.policy_items) == 1
+        assert result.guard_fn_name
+        assert result.guard_file
+        assert len(result.item_guard_files) == 1
+        assert result.item_guard_files[0].content  # Generated guard code
+        assert len(result.test_files) == 1
+        assert result.test_files[0].content
+
+    # -----------------------------------------------------------------------
+    # Runtime Testing
+    # -----------------------------------------------------------------------
+
+    tool_invoker = ToolFunctionsInvoker(funcs)
+
+    def call(tool_name: str, args: Dict) -> ToolGuardCodeRunOutput:
+        """Executes a tool through its guard code."""
+        return cast(
+            ToolGuardCodeRunOutput,
+            toolguard_code.process(
+                ToolGuardCodeRunInput(
+                    generated_guard_dir=build_output.root_dir,
+                    tool_name=tool_name,
+                    tool_args=args,
+                    tool_invoker=tool_invoker,
+                ),
+                AgentPhase.RUNTIME,
+            ),
+        )
+
+    def assert_complies(tool_name: str, args: Dict):
+        """Asserts that no violation occurs."""
+        assert call(tool_name, args).violation is None
+
+    def assert_violates(tool_name: str, args: Dict):
+        """Asserts that a violation occurs with level ERROR."""
+        res = call(tool_name, args)
+        assert res.violation
+        assert res.violation.violation_level == ViolationLevel.ERROR
+        assert res.violation.user_message
+
+    # Valid input cases -----------------------------------------------------
+    assert_complies("divide_tool", {"g": 5, "h": 4})
+    assert_complies("add_tool", {"a": 5, "b": 4})
+    assert_complies("subtract_tool", {"a": 5, "b": 4})
+    assert_complies("multiply_tool", {"a": 5, "b": 4})
+    assert_complies("map_kdi_number", {"i": 5})
+
+    # Violation cases -------------------------------------------------------
+    assert_violates("divide_tool", {"g": 5, "h": 0})
+    assert_violates("add_tool", {"a": 5, "b": 73})
+    assert_violates("add_tool", {"a": 73, "b": 5})
+
+    # Violations for multiply_tool based on custom rules
+    assert_violates("multiply_tool", {"a": 2, "b": 73})
+    assert_violates("multiply_tool", {"a": 22, "b": 2})
+
+
+# ---------------------------------------------------------------------------
+# Optional: Main entry point for directly running the test without pytest
+# ---------------------------------------------------------------------------
+
+if __name__ == "__main__":
+    import asyncio
+
+    async def main():
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        work_dir = str(Path(__file__).parent / "outputs" / f"work_{timestamp}")
+        print("[main] work dir created:", work_dir)
+
+        # Call the async test function directly
+        await test_tool_guard_calculator_policy(work_dir)
+        print("[main] Test completed successfully.")
+
+    asyncio.run(main())

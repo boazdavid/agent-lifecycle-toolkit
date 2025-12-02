@@ -4,10 +4,11 @@ from typing import List, Dict, Optional, Any, TypeVar, Union
 import json
 import yaml
 
-from altk.pre_tool.toolguard.toolguard.common.dict import find_ref
-from altk.pre_tool.toolguard.toolguard.common.http import MEDIA_TYPE_APP_JSON
-from altk.pre_tool.toolguard.toolguard.common.jschema import JSchema
-from altk.pre_tool.toolguard.toolguard.common.ref import Reference
+from .array import not_none
+from .dict import find_ref
+from .http import MEDIA_TYPE_APP_JSON
+from .jschema import JSchema
+from .ref import Reference
 
 
 class Contact(BaseModel):

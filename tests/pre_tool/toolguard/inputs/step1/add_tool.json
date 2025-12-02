@@ -1,0 +1,24 @@
+{
+  "policies": [
+    {
+      "policy_name": "Prohibition of Adding Numbers Whose Product Equals 365",
+      "description": "The add_tool must not allow addition of two or more numbers if their multiplication result equals 365. For example, adding 5 + 73 should be disallowed, because 5 * 73 = 365. In such cases, the operation must be rejected with an error like: 'Error: Addition of numbers whose product equals 365 is not allowed.'",
+      "references": [
+        "The calculator must not allow addition of two or more numbers if their multiplication result equals 365. For example, adding 5 + 73 should be disallowed, because 5 * 73 = 365. In such cases, the operation must be rejected with an error like: 'Error: Addition of numbers whose product equals 365 is not allowed.'"
+      ],
+      "iteration_added": 0,
+      "violating_examples": [
+        "A user tries to add 5 and 73. Since 5 * 73 equals 365, this operation should be rejected with an error message: 'Error: Addition of numbers whose product equals 365 is not allowed.'",
+        "The user attempts to add two numbers, 1 and 365, using the add_tool. This is a violation because 1 * 365 is also 365 and should be met with an error message.",
+        "Adding together the numbers 10 and 36.5 should be disallowed because their product is 365. An error message should be shown to prevent this operation.",
+        "A user inputs 365 and 1 into the add_tool. This action violates the policy as 365 multiplied by 1 is 365, warranting an error message rejection.",
+        "The system tries to perform the addition of -5 and -73 using the add_tool. Despite the negative signs, their product still equals 365 and thus contravenes the policy, requiring an error message to be displayed."
+      ],
+      "compliance_examples": [
+        "Performing an addition of 10 and 20, where their product is 200, complies with the policy since it does not equal 365, and the addition proceeds without errors.",
+        "A user adds together the numbers 30 and 40. Since their product is 1200, which is not 365, this operation adheres to the policy without issue.",
+        "Addition of numbers 123 and 3 is compliant as they result in 369 when multiplied and hence clear the policy condition allowing progressive operation."
+      ]
+    }
+  ]
+}

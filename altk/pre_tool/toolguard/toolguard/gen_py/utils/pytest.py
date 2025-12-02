@@ -1,20 +1,16 @@
-from enum import Enum
+
+from enum import StrEnum
 import json
 import os
 from os.path import join
-import subprocess
-import sys
 from typing import Any, List, Dict, Optional
 from pydantic import BaseModel, Field
-from contextlib import contextmanager
 
-from altk.pre_tool.toolguard.toolguard.data_types import FileTwin
+from ...common.multi_process import run_in_process
+from ...common.safe_py import run_safe_python
+from ...data_types import FileTwin
 
 
-class StrEnum(str, Enum):
-    """An abstract base class for string-based enums."""
-
-    pass
 
 
 class TestOutcome(StrEnum):
@@ -107,7 +103,9 @@ class TestReport(BaseModel):
         # applicative test failure
         for test in self.tests:
             if test.outcome == TestOutcome.failed:
-                error = test.call.crash.message
+                error = test.call.longrepr
+                if test.call.crash:
+                    error = test.call.crash.message
                 if test.user_properties:
                     case_desc = test.user_properties[0].get("docstring")
                     if case_desc:
@@ -115,63 +113,41 @@ class TestReport(BaseModel):
                 errors.add(error)
         return list(errors)
 
-
-def run(folder: str, test_file: str, report_file: str) -> TestReport:
-    # _run_in_subprocess(folder, test_file, report_file)
-    _run_safe_python(folder, test_file, report_file)
-
+def run(folder:str, test_file:str, report_file:str)->TestReport:
+    run_tests_in_safe_python_separate_process(folder, test_file, report_file)
+    
     report = read_test_report(os.path.join(folder, report_file))
-    # overwrite it with indented version
+
+    #overwrite it with indented version
     with open(os.path.join(folder, report_file), "w", encoding="utf-8") as f:
         json.dump(report.model_dump(), f, indent=2)
 
     return report
 
-
-@contextmanager
-def temp_sys_path(path):
-    """Temporarily insert a path into sys.path."""
-    sys.path.insert(0, path)
-    try:
-        yield
-    finally:
-        try:
-            sys.path.remove(path)
-        except ValueError:
-            pass
-
-
-def _run_safe_python(folder: str, test_file: str, report_file: str):
-    from smolagents.local_python_executor import LocalPythonExecutor
-
-    exec = LocalPythonExecutor(
-        additional_authorized_imports=["pytest"],
-        max_print_outputs_length=None,
-        additional_functions=None,
-    )
-    exec.static_tools = {"temp_sys_path": temp_sys_path}
+# Run the tests in this environment.
+# run the tests in safe mode, so network and os operations are blocked. only specified libraries can be used.
+# run the tests in a separate process. so python modules are isolated. as the code is evolving in the filesystem, we need a way to avoid python module caching. otherwise, it will not see that the code in the file has changed.
+def run_tests_in_safe_python_separate_process(folder:str, test_file:str, report_file:str):
     code = f"""
 import pytest
-with temp_sys_path("{folder}")
-    pytest.main(["{join(folder, test_file)}", "--quiet", "--json-report", "--json-report-file={join(folder, report_file)}"])
-"""
-    out = exec(code)
-    return out
+pytest.main(["{join(folder, test_file)}", "--quiet", "--json-report", "--json-report-file={join(folder, report_file)}"])
+"""   
+    return run_in_process(run_safe_python, code, ["pytest"])
 
-
-def _run_in_subprocess(folder: str, test_file: str, report_file: str):
-    subprocess.run(
-        [
-            "pytest",
-            test_file,
-            # "--verbose",
-            "--quiet",
-            "--json-report",
-            f"--json-report-file={report_file}",
-        ],
-        env={**os.environ, "PYTHONPATH": "."},
-        cwd=folder,
-    )
+# def _run_in_subprocess(folder:str, test_file:str, report_file:str):
+#     subprocess.run([
+#             "pytest",
+#             test_file,
+#             # "--verbose",
+#             "--quiet",
+#             "--json-report", 
+#             f"--json-report-file={report_file}"
+#         ], 
+#         env={
+#             **os.environ, 
+#             "PYTHONPATH": "."
+#         },
+#         cwd=folder)
 
 
 def configure(folder: str):
@@ -192,7 +168,3 @@ def read_test_report(file_path: str) -> TestReport:
     with open(file_path, "r") as file:
         data = json.load(file)
     return TestReport.model_validate(data, strict=False)
-
-
-# report = read_test_report("/Users/davidboaz/Documents/GitHub/gen_policy_validator/tau_airline/output/2025-03-12 08:54:16/pytest_report.json")
-# print(report.summary.failed)

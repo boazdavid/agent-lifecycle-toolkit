@@ -1,5 +1,5 @@
 from typing import List
-from altk.pre_tool.toolguard.toolguard.data_types import Domain, ToolPolicyItem
+from ...data_types import Domain, ToolGuardSpecItem
 from mellea import generative
 
 # from toolguard.gen_py.prompts.python_code import PythonCodeModel
@@ -9,7 +9,7 @@ from mellea import generative
 def improve_tool_guard(
     prev_impl: str,
     domain: Domain,
-    policy_item: ToolPolicyItem,
+    policy_item: ToolGuardSpecItem,
     dependent_tool_names: List[str],
     review_comments: List[str],
 ) -> str:
@@ -19,7 +19,7 @@ def improve_tool_guard(
         Args:
             prev_impl (str): The previous implementation of the tool-call check.
             domain (Domain): Python code defining available data types and other tool interfaces.
-            policy_item (ToolPolicyItem): Requirements for this tool.
+            policy_item (ToolGuardSpecItem): Requirements for this tool.
             dependent_tool_names (List[str]): Names of other tools that this tool may call to obtain required information.
             review_comments (List[str]): Review feedback on the current implementation (e.g., pylint errors, failed unit tests).
 

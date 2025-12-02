@@ -1,3 +1,4 @@
+from importlib import import_module
 import inspect
 import os
 import asyncio
@@ -6,68 +7,56 @@ from os.path import join
 import re
 from typing import Callable, List, Tuple
 
-from altk.pre_tool.toolguard.toolguard.common import py
-from altk.pre_tool.toolguard.toolguard.common.llm_py import get_code_content
-from altk.pre_tool.toolguard.toolguard.common.py_doc_str import extract_docstr_args
-from altk.pre_tool.toolguard.toolguard.common.str import to_snake_case
-from altk.pre_tool.toolguard.toolguard.data_types import (
+from ..common import py
+from ..common.llm_py import get_code_content
+from ..common.py_doc_str import extract_docstr_args
+from ..common.str import to_snake_case
+from ..data_types import (
     DEBUG_DIR,
     TESTS_DIR,
     FileTwin,
     RuntimeDomain,
-    ToolPolicy,
-    ToolPolicyItem,
+    ToolGuardSpec,
+    ToolGuardSpecItem,
 )
-from altk.pre_tool.toolguard.toolguard.gen_py.consts import (
+from ..gen_py.consts import (
     guard_fn_module_name,
     guard_fn_name,
     guard_item_fn_module_name,
     guard_item_fn_name,
     test_fn_module_name,
 )
-from altk.pre_tool.toolguard.toolguard.gen_py.tool_dependencies import tool_dependencies
-from altk.pre_tool.toolguard.toolguard.runtime import (
-    ToolGuardCodeResult,
-    find_class_in_module,
-    load_module_from_path,
-)
-import altk.pre_tool.toolguard.toolguard.gen_py.utils.pytest as pytest
-import altk.pre_tool.toolguard.toolguard.gen_py.utils.pyright as pyright
-from altk.pre_tool.toolguard.toolguard.gen_py.prompts.gen_tests import (
-    generate_init_tests,
-    improve_tests,
-)
-from altk.pre_tool.toolguard.toolguard.gen_py.prompts.improve_guard import (
-    improve_tool_guard,
-)
-from altk.pre_tool.toolguard.toolguard.gen_py.templates import load_template
+from ..runtime import ToolGuardCodeResult, find_class_in_module
+from ..gen_py.tool_dependencies import tool_dependencies
+from ..gen_py.prompts.gen_tests import generate_init_tests, improve_tests
+from ..gen_py.prompts.improve_guard import improve_tool_guard
+from ..gen_py.templates import load_template
+from .utils import pytest
+from .utils import pyright
 
 logger = logging.getLogger(__name__)
 
 MAX_TOOL_IMPROVEMENTS = 5
 MAX_TEST_GEN_TRIALS = 3
 
-
 class ToolGuardGenerator:
     app_name: str
     py_path: str
-    tool_policy: ToolPolicy
+    tool_policy: ToolGuardSpec
     domain: RuntimeDomain
     common: FileTwin
 
     def __init__(
         self,
         app_name: str,
-        tool_policy: ToolPolicy,
+        tool_policy: ToolGuardSpec,
         py_path: str,
-        domain: RuntimeDomain,
-        py_env: str,
+        domain: RuntimeDomain
     ) -> None:
         self.py_path = py_path
         self.app_name = app_name
         self.tool_policy = tool_policy
         self.domain = domain
-        self.py_env = py_env
 
     def start(self):
         app_path = join(self.py_path, to_snake_case(self.app_name))
@@ -120,7 +109,7 @@ class ToolGuardGenerator:
         )
 
     async def _generate_item_tests_and_guard(
-        self, item: ToolPolicyItem, init_guard: FileTwin
+        self, item: ToolGuardSpecItem, init_guard: FileTwin
     ) -> Tuple[FileTwin | None, FileTwin]:
         # Dependencies of this tool
         tool_fn_name = to_snake_case(self.tool_policy.tool_name)
@@ -142,6 +131,7 @@ class ToolGuardGenerator:
                 guard = await self._improve_guard(item, init_guard, [], dep_tools)
                 return None, guard
             except Exception as ex:
+                logger.exception(ex)
                 logger.warning(
                     "guard generation failed. returning initial guard: %s", str(ex)
                 )
@@ -157,19 +147,20 @@ class ToolGuardGenerator:
             )  # 😄🎉 Happy path
             return guard_tests, guard
         except Exception as ex:
+            logger.exception(ex)
             logger.warning(
                 "guard generation failed. returning initial guard: %s", str(ex)
             )
             return None, init_guard
 
-    # async def tool_dependencies(self, policy_item: ToolPolicyItem, tool_signature: str) -> Set[str]:
+    # async def tool_dependencies(self, policy_item: ToolGuardSpecItem, tool_signature: str) -> Set[str]:
     #     domain = self.domain.get_definitions_only() #remove runtime fields
     #     pseudo_code = await tool_policy_pseudo_code(policy_item, tool_signature, domain)
     #     dep_tools = await extract_api_dependencies_from_pseudo_code(pseudo_code, domain)
     #     return set(dep_tools)
 
     async def _generate_tests(
-        self, item: ToolPolicyItem, guard: FileTwin, dep_tools: List[str]
+        self, item: ToolGuardSpecItem, guard: FileTwin, dep_tools: List[str]
     ) -> FileTwin:
         test_file_name = join(
             TESTS_DIR, self.tool_policy.tool_name, f"{test_fn_module_name(item)}.py"
@@ -184,26 +175,20 @@ class ToolGuardGenerator:
             domain = self.domain.get_definitions_only()  # remove runtime fields
             first_time = trial_no == "a"
             if first_time:
-                # FIXME when melea will support aysnc
-                res = await asyncio.to_thread(
-                    lambda: generate_init_tests(
-                        fn_src=guard,
-                        policy_item=item,
-                        domain=domain,  # noqa: B023
-                        dependent_tool_names=dep_tools,
-                    )
+                res = generate_init_tests(
+                    fn_src=guard,
+                    policy_item=item,
+                    domain=domain,  # noqa: B023
+                    dependent_tool_names=dep_tools,
                 )
             else:
                 assert test_file
-                # FIXME when melea will support aysnc
-                res = await asyncio.to_thread(
-                    lambda: improve_tests(
-                        prev_impl=test_file.content,  # noqa: B023
-                        domain=domain,  # noqa: B023
-                        policy_item=item,
-                        review_comments=errors,  # noqa: B023
-                        dependent_tool_names=dep_tools,
-                    )
+                res = improve_tests(
+                    prev_impl=test_file.content,  # noqa: B023
+                    domain=domain,  # noqa: B023
+                    policy_item=item,
+                    review_comments=errors,  # noqa: B023
+                    dependent_tool_names=dep_tools,
                 )
 
             test_file = FileTwin(
@@ -211,16 +196,14 @@ class ToolGuardGenerator:
             ).save(self.py_path)
             test_file.save_as(self.py_path, self.debug_dir(item, f"test_{trial_no}.py"))
 
-            syntax_report = pyright.run(self.py_path, test_file.file_name, self.py_env)
+            syntax_report = pyright.run(self.py_path, test_file.file_name)
             FileTwin(
-                file_name=self.debug_dir(item, f"test_{trial_no}_pyright.json"),
-                content=syntax_report.model_dump_json(indent=2),
-            ).save(self.py_path)
-
-            if syntax_report.summary.errorCount > 0:
-                logger.warning(
-                    f"{syntax_report.summary.errorCount} syntax errors in tests iteration '{trial_no}' in item '{item.name}'."
-                )
+                    file_name= self.debug_dir(item, f"test_{trial_no}_pyright.json"),
+                    content=syntax_report.model_dump_json(indent=2)
+                ).save(self.py_path)
+            
+            if syntax_report.summary.errorCount>0:
+                logger.warning(f"{syntax_report.summary.errorCount} syntax errors in tests iteration '{trial_no}' in item '{item.name}'.")
                 errors = syntax_report.list_error_messages(test_file.content)
                 continue
 
@@ -228,25 +211,26 @@ class ToolGuardGenerator:
             logger.debug(
                 f"Generated Tests for tool '{self.tool_policy.tool_name}' '{item.name}'(trial='{trial_no}')"
             )
-            report_file_name = self.debug_dir(item, f"test_{trial_no}_pytest.json")
-            pytest_report = pytest.run(
-                self.py_path, test_file.file_name, report_file_name
-            )
-            if (
-                pytest_report.all_tests_collected_successfully()
-                and pytest_report.non_empty_tests()
-            ):
-                return test_file
-            if not pytest_report.non_empty_tests():  # empty test set
-                errors = ["empty set of generated unit tests is not allowed"]
-            else:
-                errors = pytest_report.list_errors()
+            return test_file
+            # report_file_name = self.debug_dir(item, f"test_{trial_no}_pytest.json")
+            # pytest_report = pytest.run(
+            #     self.py_path, test_file.file_name, report_file_name
+            # )
+            # if (
+            #     pytest_report.all_tests_collected_successfully()
+            #     and pytest_report.non_empty_tests()
+            # ):
+            #     return test_file
+            # if not pytest_report.non_empty_tests():  # empty test set
+            #     errors = ["empty set of generated unit tests is not allowed"]
+            # else:
+            #     errors = pytest_report.list_errors()
 
         raise Exception("Generated tests contain syntax errors")
 
     async def _improve_guard_green_loop(
         self,
-        item: ToolPolicyItem,
+        item: ToolGuardSpecItem,
         guard: FileTwin,
         tests: FileTwin,
         dep_tools: List[str],
@@ -279,7 +263,7 @@ class ToolGuardGenerator:
 
     async def _improve_guard(
         self,
-        item: ToolPolicyItem,
+        item: ToolGuardSpecItem,
         prev_guard: FileTwin,
         review_comments: List[str],
         dep_tools: List[str],
@@ -294,15 +278,12 @@ class ToolGuardGenerator:
             )
             domain = self.domain.get_definitions_only()  # omit runtime fields
             prev_python = get_code_content(prev_guard.content)
-            # FIXME when melea will support aysnc
-            res = await asyncio.to_thread(
-                lambda: improve_tool_guard(
-                    prev_impl=prev_python,  # noqa: B023
-                    domain=domain,  # noqa: B023
-                    policy_item=item,
-                    dependent_tool_names=dep_tools,
-                    review_comments=review_comments + errors,  # noqa: B023
-                )
+            res = improve_tool_guard(
+                prev_impl=prev_python,  # noqa: B023
+                domain=domain,  # noqa: B023
+                policy_item=item,
+                dependent_tool_names=dep_tools,
+                review_comments=review_comments + errors,  # noqa: B023
             )
 
             guard = FileTwin(
@@ -312,7 +293,7 @@ class ToolGuardGenerator:
                 self.py_path, self.debug_dir(item, f"guard_{round}_{trial}.py")
             )
 
-            syntax_report = pyright.run(self.py_path, guard.file_name, self.py_env)
+            syntax_report = pyright.run(self.py_path, guard.file_name)
             FileTwin(
                 file_name=self.debug_dir(item, f"guard_{round}_{trial}.pyright.json"),
                 content=syntax_report.model_dump_json(indent=2),
@@ -335,8 +316,7 @@ class ToolGuardGenerator:
         raise Exception(f"Syntax error generating for tool '{item.name}'.")
 
     def _find_api_function(self, tool_fn_name: str):
-        with py.temp_python_path(self.py_path):
-            module = load_module_from_path(self.domain.app_api.file_name, self.py_path)
+        module = import_module(py.path_to_module(self.domain.app_api.file_name))
         assert module, f"File not found {self.domain.app_api.file_name}"
         cls = find_class_in_module(module, self.domain.app_api_class_name)
         return getattr(cls, tool_fn_name)
@@ -411,7 +391,7 @@ class ToolGuardGenerator:
         return clean_sig_str
 
     def _create_item_module(
-        self, tool_item: ToolPolicyItem, tool_fn: Callable
+        self, tool_item: ToolGuardSpecItem, tool_fn: Callable
     ) -> FileTwin:
         file_name = join(
             to_snake_case(self.app_name),
@@ -437,7 +417,7 @@ class ToolGuardGenerator:
             ),
         ).save(self.py_path)
 
-    def debug_dir(self, policy_item: ToolPolicyItem, dir: str):
+    def debug_dir(self, policy_item: ToolGuardSpecItem, dir: str):
         return join(
             DEBUG_DIR,
             to_snake_case(self.tool_policy.tool_name),

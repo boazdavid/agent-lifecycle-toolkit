@@ -1,3 +1,4 @@
+
 import os
 import inspect
 from typing import Callable
@@ -5,8 +6,7 @@ import sys
 from pathlib import Path
 from contextlib import contextmanager
 
-from altk.pre_tool.toolguard.toolguard.common.str import to_snake_case
-
+from .str import to_snake_case
 
 def py_extension(filename: str) -> str:
     return filename if filename.endswith(".py") else filename + ".py"
@@ -28,11 +28,6 @@ def module_to_path(module: str) -> str:
     parts = module.split(".")
     return os.path.join(*parts[:-1], py_extension(parts[-1]))
 
-
-def unwrap_fn(fn: Callable) -> Callable:
-    return fn.func if hasattr(fn, "func") else fn
-
-
 @contextmanager
 def temp_python_path(path: str):
     path = str(Path(path).resolve())
@@ -46,8 +41,7 @@ def temp_python_path(path: str):
         # Already in sys.path, no need to remove
         yield
 
-
-def extract_docstr_args(func: Callable) -> str:
+def extract_docstr_args(func:Callable) -> str:
     doc = inspect.getdoc(func)
     if not doc:
         return ""
@@ -86,3 +80,18 @@ def extract_docstr_args(func: Callable) -> str:
         return ""
 
     return "\n".join(args_lines)
+
+def get_func_signature(obj)->str:
+	if inspect.isfunction(obj):
+		return inspect.signature(obj)
+	if hasattr(obj, "func") and inspect.isfunction(obj.func): # a @tool
+		return inspect.signature(obj.func)
+	if hasattr(obj, "args_schema"):
+		schema = obj.args_schema
+		fields = schema.model_fields
+		params = ", ".join(
+			f"{name}: {field.annotation.__name__ if hasattr(field.annotation, '__name__') else field.annotation}"
+			for name, field in fields.items()
+		)
+		return f"({params})"
+	return None

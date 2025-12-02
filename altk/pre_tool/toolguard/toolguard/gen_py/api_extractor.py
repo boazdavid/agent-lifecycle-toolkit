@@ -21,16 +21,13 @@ from typing import (
 from typing import Annotated, Union
 from collections import defaultdict, deque
 import typing
-from altk.pre_tool.toolguard.toolguard.common.py import module_to_path, unwrap_fn
-from altk.pre_tool.toolguard.toolguard.data_types import FileTwin
+from ..common.py import module_to_path
+from ..data_types import FileTwin
 
 Dependencies = DefaultDict[type, Set[type]]
 
-
 class APIExtractor:
-    def __init__(self, py_path: str, include_module_roots: Optional[List[str]] = None):
-        if not include_module_roots:
-            include_module_roots = []
+    def __init__(self, py_path:str, include_module_roots:List[str] = []):
         self.py_path = py_path
         self.include_module_roots = include_module_roots
 
@@ -43,7 +40,6 @@ class APIExtractor:
         impl_module_name: str,
         impl_class_name: str,
     ) -> Tuple[FileTwin, FileTwin, FileTwin]:
-        funcs = [unwrap_fn(func) for func in funcs]
         assert all([_is_global_or_class_function(func) for func in funcs])
 
         os.makedirs(self.py_path, exist_ok=True)
@@ -748,37 +744,3 @@ def _is_global_or_class_function(func):
             return False  # instance method
 
     return False
-
-
-# Example class for testing
-if __name__ == "__main__":
-    # from airline2.domains.airline.tools import AirlineTools
-    # extractor = APIExtractor("output", include_module_roots = ["airline2"])
-    # # interface_file, types_file = extractor.extract_from_class(AirlineTools, output_dir="output")
-    # t = AirlineTools({})
-    # interface_file, types_file = extractor.extract_from_functions([AirlineTools.book_reservation], "I_Tau", "my_app.i_tau", "my_app.tau_types")
-
-    from appointment_app import lg_tools
-
-    funcs = [
-        lg_tools.add_user,
-        lg_tools.add_payment_method,
-        lg_tools.get_user_payment_methods,
-        lg_tools.get_available_dr_specialties,
-        lg_tools.search_doctors,
-        lg_tools.search_available_appointments,
-    ]
-    extractor = APIExtractor("output", include_module_roots=["appointment_app"])
-    interface, types_, impl = extractor.extract_from_functions(
-        funcs,
-        "I_Clinic",
-        "clinic.i_clinic",
-        "clinic.clinc_types",
-        "clinic.clinic_impl",
-        "ClinicImpl",
-    )
-
-    print(f"Interface saved to: {interface.file_name}")
-    print(f"Types saved to: {types_.file_name}")
-    print(f"Impl saved to: {impl.file_name}")
-    print("Done")

@@ -3,15 +3,15 @@ from pathlib import Path
 from typing import List, Optional, Tuple, Union
 from os.path import join
 
-from altk.pre_tool.toolguard.toolguard.common.array import find
-from altk.pre_tool.toolguard.toolguard.common.py import module_to_path
-from altk.pre_tool.toolguard.toolguard.common.str import to_camel_case, to_snake_case
-import altk.pre_tool.toolguard.toolguard.gen_py.consts as consts
-from altk.pre_tool.toolguard.toolguard.gen_py.templates import load_template
-from altk.pre_tool.toolguard.toolguard.gen_py.utils.datamodel_codegen import (
+from ..common.array import find
+from ..common.py import module_to_path
+from ..common.str import to_camel_case, to_pascal_case, to_snake_case
+from . import consts
+from .templates import load_template
+from .utils.datamodel_codegen import (
     run as dm_codegen,
 )
-from altk.pre_tool.toolguard.toolguard.common.open_api import (
+from ..common.open_api import (
     OpenAPI,
     Operation,
     Parameter,
@@ -23,8 +23,9 @@ from altk.pre_tool.toolguard.toolguard.common.open_api import (
     JSchema,
     read_openapi,
 )
-from altk.pre_tool.toolguard.toolguard.data_types import FileTwin, RuntimeDomain
+from ..data_types import FileTwin, RuntimeDomain
 
+ARGS = "args"
 
 def generate_domain_from_openapi(
     py_path: str, app_name: str, openapi_file: str
@@ -37,9 +38,9 @@ def generate_domain_from_openapi(
         py_path, join(consts.RUNTIME_PACKAGE_NAME, consts.RUNTIME_TYPES_PY)
     )
     runtime = FileTwin.load_from(root, "runtime.py")
-    runtime.content = runtime.content.replace(
-        "toolguard.", f"{consts.RUNTIME_PACKAGE_NAME}."
-    )
+    # runtime.content = runtime.content.replace(
+    #     "toolguard.", f"{consts.RUNTIME_PACKAGE_NAME}."
+    # )
     runtime.save_as(py_path, join(consts.RUNTIME_PACKAGE_NAME, consts.RUNTIME_INIT_PY))
 
     # APP Types
@@ -104,7 +105,7 @@ def _get_oas_methods(oas: OpenAPI):
             args_str = ", ".join(["self"] + [f"{arg}:{type}" for arg, type in args])
             sig = f"({args_str})->{ret}"
 
-            body = "pass"
+            body = f"return self._delegate.invoke('{to_snake_case(op.operationId)}', {ARGS}.model_dump(), {ret})"
             # if orign_funcs:
             #     func = find(orign_funcs or [], lambda fn: fn.__name__ == op.operationId) # type: ignore
             #     if func:
@@ -185,7 +186,7 @@ def _make_signature(
 
     if find(params, lambda p: p.in_ == ParameterIn.query):
         query_type = f"{fn_name}ParametersQuery"
-        args.append(("args", query_type))
+        args.append((ARGS, query_type))
 
     req_body = oas.resolve_ref(op.requestBody, RequestBody)
     if req_body:
@@ -193,7 +194,7 @@ def _make_signature(
         body_type = _oas_to_py_type(scm_or_ref, oas)
         if body_type is None:
             body_type = f"{fn_name}Request"
-        args.append(("args", body_type))
+        args.append((ARGS, body_type))
 
     rsp_or_ref = op.responses.get("200")
     rsp = oas.resolve_ref(rsp_or_ref, Response)
@@ -203,13 +204,15 @@ def _make_signature(
             rsp_type = _oas_to_py_type(scm_or_ref, oas)
             if rsp_type is None:
                 rsp_type = f"{fn_name}Response"
-
+        else:
+            rsp_type = "Any"
     return args, rsp_type
 
 
 def _oas_to_py_type(scm_or_ref: Union[Reference, JSchema], oas: OpenAPI) -> str | None:
     if isinstance(scm_or_ref, Reference):
-        return scm_or_ref.ref.split("/")[-1]
+        typ = scm_or_ref.ref.split("/")[-1]
+        return to_pascal_case(typ)
 
     scm = oas.resolve_ref(scm_or_ref, JSchema)
     if scm:
