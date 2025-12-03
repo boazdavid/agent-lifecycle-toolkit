@@ -34,7 +34,7 @@ see [simple calculator test](../../tests/pre_tool_guard_toolkit/test_toolguard_s
 ### Component Configuarion
 This component expects an LLM client configuarion:
 ```python
-from altk.toolkit_core.llm import get_llm  
+from altk.core.llm import get_llm  
 
 LLMClient = get_llm("litellm.output_val")
 llm_client = LLMClient(...)
@@ -52,7 +52,7 @@ export AZURE_API_VERSION="2024-08-01-preview"
 ```
 code:
 ```python
-from altk.toolkit_core.llm import get_llm  
+from altk.core.llm import get_llm  
 
 LLMClient = get_llm("litellm.output_val")
 llm_client = LLMClient(

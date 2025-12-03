@@ -5,12 +5,11 @@ from typing import Callable, List, Optional
 import mellea
 
 from .domain_from_funcs import generate_domain_from_functions
-from ..data_types import RuntimeDomain, ToolGuardSpec
+from ..data_types import RuntimeDomain, ToolGuardSpec, MeleaSessionData
 from .domain_from_openapi import generate_domain_from_openapi
 from ..runtime import ToolGuardsCodeGenerationResult
 from .tool_guard_generator import ToolGuardGenerator
-from .utils import pytest
-from .utils import pyright
+from .utils import pytest, pyright
 
 logger = logging.getLogger(__name__)
 

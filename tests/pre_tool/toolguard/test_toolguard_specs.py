@@ -8,14 +8,14 @@ from typing import cast
 import dotenv
 import pytest
 
-from altk.pre_tool_guard_toolkit.toolguard_spec_component import (
+from altk.pre_tool.toolguard.toolguard_spec_component import (
     ToolGuardSpecBuildInput,
     ToolGuardSpecComponent,
     ToolGuardSpecComponentConfig,
     ToolGuardSpecs,
 )
-from altk.toolkit_core.core.toolkit import AgentPhase
-from altk.toolkit_core.llm.base import get_llm
+from altk.core.toolkit import AgentPhase
+from altk.core.llm.base import get_llm
 
 from .inputs.tool_functions import (
     divide_tool,
@@ -66,19 +66,19 @@ async def test_tool_guard_calculator_policy(work_dir: str):
     """
 
     # Example alternative LLM:
-    # LLMClient = get_llm("litellm.output_val")
-    # llm_client = LLMClient(
-    #     model_name="gpt-4o-2024-08-06",
-    #     custom_llm_provider="azure",
-    # )
-
-    LLMClient = get_llm("watsonx.output_val")
+    LLMClient = get_llm("litellm.output_val")
     llm_client = LLMClient(
-        model_name="mistralai/mistral-medium-2505",
-        api_key=os.getenv("WX_API_KEY"),
-        project_id=os.getenv("WX_PROJECT_ID"),
-        url=os.getenv("WX_URL", "https://us-south.ml.cloud.ibm.com"),
+        model_name="gpt-4o-2024-08-06",
+        custom_llm_provider="azure",
     )
+
+    # LLMClient = get_llm("watsonx.output_val")
+    # llm_client = LLMClient(
+    #     model_name="mistralai/mistral-medium-2505",
+    #     api_key=os.getenv("WX_API_KEY"),
+    #     project_id=os.getenv("WX_PROJECT_ID"),
+    #     url=os.getenv("WX_URL", "https://us-south.ml.cloud.ibm.com"),
+    # )
 
     toolguard_spec = ToolGuardSpecComponent(
         ToolGuardSpecComponentConfig(llm_client=llm_client)

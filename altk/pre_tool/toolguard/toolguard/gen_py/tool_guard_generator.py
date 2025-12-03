@@ -87,17 +87,15 @@ class ToolGuardGenerator:
 
     async def generate(self) -> ToolGuardCodeResult:
         self.start()
-        tool_guard, init_item_guards = self._create_initial_tool_guards()
-
-        # Generate guards for all tool items
-        tests_and_guards = await asyncio.gather(
-            *[
+        
+        with py.temp_python_path(self.py_path):
+            tool_guard, init_item_guards = self._create_initial_tool_guards()
+    
+            # Generate guards for all tool items
+            tests_and_guards = await asyncio.gather(* [
                 self._generate_item_tests_and_guard(item, item_guard)
-                for item, item_guard in zip(
-                    self.tool_policy.policy_items, init_item_guards
-                )
-            ]
-        )
+                    for item, item_guard in zip(self.tool_policy.policy_items, init_item_guards)
+            ])
 
         item_tests, item_guards = zip(*tests_and_guards)
         return ToolGuardCodeResult(

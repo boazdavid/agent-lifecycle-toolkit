@@ -4,8 +4,8 @@ from typing import Callable, List, Set
 from langchain.tools import BaseTool
 from pydantic import Field
 
-from ..toolkit_core.llm import ValidatingLLMClient
-from ..toolkit_core.core.toolkit import AgentPhase, ComponentBase, ComponentConfig, ComponentInput
+from ...core.llm import ValidatingLLMClient
+from ...core.toolkit import AgentPhase, ComponentBase, ComponentConfig, ComponentInput
 from .toolguard import ToolGuardSpec, generate_guard_specs
 from .toolguard.llm.i_tg_llm import I_TG_LLM
 

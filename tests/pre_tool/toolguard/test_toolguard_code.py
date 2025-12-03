@@ -18,26 +18,26 @@ from typing import Dict, cast
 import dotenv
 import pytest
 
-from altk.pre_tool_guard_toolkit import (
+from altk.pre_tool.toolguard import (
     ToolGuardCodeComponent,
     ToolGuardCodeBuildInput,
 )
-from altk.pre_tool_guard_toolkit.toolguard.data_types import (
+from altk.pre_tool.toolguard.toolguard.data_types import (
     MeleaSessionData,
     load_tool_policy,
 )
-from altk.pre_tool_guard_toolkit.toolguard.runtime import (
+from altk.pre_tool.toolguard.toolguard.runtime import (
     ToolFunctionsInvoker,
     ToolGuardsCodeGenerationResult,
     load_toolguard_code_result,
 )
-from altk.pre_tool_guard_toolkit.toolguard_code_component import (
+from altk.pre_tool.toolguard.toolguard_code_component import (
     ToolGuardCodeComponentConfig,
     ToolGuardCodeRunInput,
     ToolGuardCodeRunOutput,
     ViolationLevel,
 )
-from altk.toolkit_core.core.toolkit import AgentPhase
+from altk.core.toolkit import AgentPhase
 
 # The calculator tools under test
 from .inputs.tool_functions import (

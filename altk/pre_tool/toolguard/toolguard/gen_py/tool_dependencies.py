@@ -3,7 +3,7 @@ import re
 from typing import Set
 from mellea.backends.types import ModelOption
 from ..data_types import Domain, ToolGuardSpecItem
-from prompts.pseudo_code import tool_policy_pseudo_code
+from .prompts.pseudo_code import tool_policy_pseudo_code
 
 MAX_TRIALS = 3
 

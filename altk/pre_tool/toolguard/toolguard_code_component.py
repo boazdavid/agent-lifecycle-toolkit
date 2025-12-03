@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 from typing import Set
 
 from .toolguard.data_types import MeleaSessionData
-from altk.toolkit_core.core.toolkit import ComponentConfig, ComponentInput, AgentPhase, ComponentBase
+from altk.core.toolkit import ComponentConfig, ComponentInput, AgentPhase, ComponentBase
 from .toolguard import generate_guards_from_specs, ToolGuardSpec, ToolGuardsCodeGenerationResult, load_toolguards
 from .toolguard.runtime import IToolInvoker, ToolGuardsCodeGenerationResult
 

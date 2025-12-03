@@ -13,7 +13,7 @@ def py_extension(filename: str) -> str:
 
 
 def un_py_extension(filename: str) -> str:
-    return filename[:-3] if filename.endswith(".py") else filename
+    return filename.removesuffix(".py") if filename.endswith(".py") else filename
 
 
 def path_to_module(file_path: str) -> str:
