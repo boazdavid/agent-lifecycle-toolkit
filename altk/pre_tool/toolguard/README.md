@@ -1,5 +1,5 @@
 # ToolGuards for Enforcing Agentic Policy Adherence
-An agent lifecycle solution for enforcing business policy adherence in agentic workflows. Enabling this component has demonstrated up to a **20‑point improvement** in end‑to‑end agent accuracy when invoking tools. This work is described in [Towards Enforcing Company Policy Adherence in Agentic Workflows](https://arxiv.org/pdf/2507.16459).
+An agent lifecycle solution for enforcing business policy adherence in agentic workflows. Enabling this component has demonstrated up to a **20‑point improvement** in end‑to‑end agent accuracy when invoking tools. This work is described in [EMNLP 2025 Towards Enforcing Company Policy Adherence in Agentic Workflows](https://arxiv.org/pdf/2507.16459).
 
 ## Table of Contents
 - [Overview](#overview)
