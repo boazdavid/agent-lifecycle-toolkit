@@ -32,7 +32,7 @@ dotenv.load_dotenv()
 # Fixtures
 # ---------------------------------------------------------------------------
 @pytest.fixture
-def work_dir():
+def out_dir():
     """
     Create a timestamped directory for test output, then delete it after the test.
     """
@@ -50,7 +50,7 @@ def work_dir():
 # Main Test
 # ---------------------------------------------------------------------------
 @pytest.mark.asyncio
-async def test_tool_guard_calculator_policy(work_dir: str):
+async def test_tool_guard_calculator_policy(out_dir: str):
     funcs = [
         divide_tool,
         add_tool,
@@ -87,7 +87,7 @@ async def test_tool_guard_calculator_policy(work_dir: str):
     input_data = ToolGuardSpecBuildInput(
         policy_text=policy_text,
         tools=funcs,
-        work_dir=work_dir,
+        out_dir=out_dir,
     )
 
     specs = cast(

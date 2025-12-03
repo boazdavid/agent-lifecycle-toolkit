@@ -17,7 +17,7 @@ class ToolGuardSpecComponentConfig(ComponentConfig):
 class ToolGuardSpecBuildInput(ComponentInput):
     policy_text: str = Field(description="Text of the policy document file")
     tools: List[Callable] | List[BaseTool] | str
-    work_dir: str
+    out_dir: str
 
 ToolGuardSpecs=List[ToolGuardSpec]
 
@@ -34,11 +34,11 @@ class ToolGuardSpecComponent(ComponentBase):
         raise NotImplementedError("Please use the aprocess() function in an async context")
 
     async def _abuild(self, data: ToolGuardSpecBuildInput) -> ToolGuardSpecs:
-        os.makedirs(data.work_dir, exist_ok=True)
+        os.makedirs(data.out_dir, exist_ok=True)
         return await generate_guard_specs(
             policy_text=data.policy_text,
             tools=data.tools,
-            work_dir=data.work_dir,
+            work_dir=data.out_dir,
             llm=TG_LLMEval(self.config.llm_client)
         )
         

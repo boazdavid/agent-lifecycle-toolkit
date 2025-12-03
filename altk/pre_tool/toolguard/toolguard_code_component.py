@@ -1,11 +1,12 @@
 import logging
-from typing import Callable, List, cast
+from typing import Any, Callable, Dict, List, cast
 from enum import Enum
 from pydantic import BaseModel, Field
 from typing import Set
+from langchain.tools import BaseTool
 
-from .toolguard.data_types import MeleaSessionData
 from altk.core.toolkit import ComponentConfig, ComponentInput, AgentPhase, ComponentBase
+from .toolguard.data_types import MeleaSessionData
 from .toolguard import generate_guards_from_specs, ToolGuardSpec, ToolGuardsCodeGenerationResult, load_toolguards
 from .toolguard.runtime import IToolInvoker, ToolGuardsCodeGenerationResult
 
@@ -15,7 +16,7 @@ class ToolGuardCodeComponentConfig(ComponentConfig):
     llm_config: MeleaSessionData
 
 class ToolGuardCodeBuildInput(ComponentInput):
-    tools: List[Callable] | str
+    tools: List[Callable] | List[BaseTool] | str
     toolguard_specs: List[ToolGuardSpec]
     out_dir: str
 
@@ -24,7 +25,7 @@ ToolGuardBuildOutput = ToolGuardsCodeGenerationResult
 class ToolGuardCodeRunInput(ComponentInput):
     generated_guard_dir: str
     tool_name: str = Field(description="Tool name")
-    tool_args: dict = Field(default={}, description="Tool arguments")
+    tool_args: Dict[str, Any] = Field(default={}, description="Tool arguments")
     tool_invoker: IToolInvoker
 
     model_config = {

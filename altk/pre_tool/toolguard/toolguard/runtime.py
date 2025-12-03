@@ -40,7 +40,7 @@ class ToolGuardCodeResult(BaseModel):
 
 
 class ToolGuardsCodeGenerationResult(BaseModel):
-    root_dir: str
+    out_dir: str
     domain: RuntimeDomain
     tools: Dict[str, ToolGuardCodeResult]
 
