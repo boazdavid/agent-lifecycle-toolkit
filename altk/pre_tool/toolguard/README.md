@@ -129,6 +129,16 @@ The input of the runtime phase is a `ToolGuardCodeRunInput` object:
   * `tool_name: str`: The name of the tool that the agent is about to call
   * `tool_args: Dict[str, Any]`: A dictionary of the toolcall arguments, by the argument name.
   * `tool_invoker: IToolInvoker`: A proxy object that enables the guard to call other read-only tools. This is needed when the policy enforcement logic involves getting data from another tool. For example, before booking a flight, you need to check the flight status by calling the "get_flight_status" API.
+  The `IToolInvoker` interface contains a single method: 
+    ```
+    def invoke(self, toolname: str, arguments: Dict[str, Any], return_type: Type[T]) -> T
+    ```
+
+    ToolGuard library currently ships with three predefined ToolInvokers:
+     * `toolguard.runtime.ToolFunctionsInvoker(funcs: List[Callable])` where the tools are defined as plain global Python functions.
+     * `toolguard.runtime.ToolMethodsInvoker(obj: object)` where the tools are defined as methods in a given Python object.
+     * `toolguard.runtime.LangchainToolInvoker(tools: List[BaseTool])` where the tools are a list of langchain tools.
+     
 
 The outpput of the runtime phase is a `ToolGuardCodeRunOutput` object with an optional `violation` field.
   * `violation: PolicyViolation | None`: Polpulated only if a violation was identified. If the toolcall complies with the policy, the violation is None. 
