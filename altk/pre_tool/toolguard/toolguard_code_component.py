@@ -13,7 +13,7 @@ from .toolguard.runtime import IToolInvoker, ToolGuardsCodeGenerationResult
 logger = logging.getLogger(__name__)
 
 class ToolGuardCodeComponentConfig(ComponentConfig):
-    llm_config: MeleaSessionData
+    llm_config: MeleaSessionData | None = None 
 
 class ToolGuardCodeBuildInput(ComponentInput):
     tools: List[Callable] | List[BaseTool] | str

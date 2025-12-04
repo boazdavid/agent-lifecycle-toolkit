@@ -83,7 +83,7 @@ The ToolGuards checks if a planned action complies with the policy. If it violat
 
 ### Component Configuarion
 
-Backed by Mellea, which requires parameters aligning to:
+The build time functionality is backed by [Mellea](https://mellea.ai/), which requires parameters aligning to:
 ```python
 mellea.MelleaSession.start_session(
     backend_name=...,
