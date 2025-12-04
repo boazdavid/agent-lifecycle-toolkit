@@ -86,5 +86,5 @@ async def generate_toolguards_from_domain(
         tool.tool_name: res for tool, res in zip(tools_w_poilicies, tool_results)
     }
     return ToolGuardsCodeGenerationResult(
-        root_dir=py_root, domain=domain, tools=tools_result
+        out_dir=py_root, domain=domain, tools=tools_result
     ).save(py_root)
