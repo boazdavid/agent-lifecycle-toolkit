@@ -59,5 +59,64 @@ For more details, refer to the paper: [Invocable APIs derived from NL2SQL datase
 - Average loop counts decrease slightly, showing that fewer iterations are needed to reach successful query completion.
 
 ## Getting Started
-Refer to this [README](https://github.com/AgentToolkit/agent-lifecycle-toolkit/blob/main/altk/post_tool/silent_review/README.md) for instructions on how to get started with the code.
-See an example in action [here]( https://github.com/AgentToolkit/agent-lifecycle-toolkit/blob/main/examples/silent_review.ipynb).
+
+### When it is recommended to Use This Component:
+Best suited for tool responses that are verbose and/or based on tabular responses.
+
+
+### Quick Start
+The below example should give you an idea of how to plug in this component into your agent pipeline:
+
+```python
+from altk.post_tool.silent_review.silent_review import SilentReviewForJSONDataComponent
+from altk.post_tool.core.toolkit import SilentReviewRunInput
+from altk.core.toolkit import AgentPhase
+
+input_data = SilentReviewRunInput(
+    messages=[
+        {"role": "user", "content": "Tell me the weather"},
+        {"role": "assistant", "content": "Calling the weather tool now"}
+    ],
+    tool_spec={
+        "name": "get_weather",
+        "description": "Gets weather for a city",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "city": {"type": "string"}
+            },
+            "required": ["city"]
+        }
+    },
+    tool_response={
+        "name": "get_weather",
+        "result": {"city": "NYC", "temperature": "75F", "condition": "Sunny"}
+    }
+)
+
+reviewer = SilentReviewForJSONDataComponent()
+result = reviewer.process(data=input_data, phase=AgentPhase.RUNTIME)
+print(result.outcome.value)
+
+# possible outcomes
+
+# NOT_ACCOMPLISHED = 0
+# PARTIAL_ACCOMPLISH = 0.5
+# ACCOMPLISHED = 1
+
+```
+
+
+### Interface
+Expected input:
+- user query,
+- tool response,
+- tool specification,
+- tool input,
+- tool type
+
+Expected output:
+- Accomplished | Partially Accomplished | Not Accomplished
+
+### Ready to get started?
+Go to our GitHub repo and run this [example](https://github.com/AgentToolkit/agent-lifecycle-toolkit/blob/main/examples/silent_review.ipynb) or get the code running by following the instructions in the [README](https://github.com/AgentToolkit/agent-lifecycle-toolkit/blob/main/altk/post_tool/silent_review/README.md).

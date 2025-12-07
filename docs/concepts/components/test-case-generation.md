@@ -15,7 +15,7 @@ formats and any internal parameter dependencies. This component is designed to p
 ## Architecture
 The figure below shows the flow of test case generation.
 
-![img_tc_gen_arch.png](../../assets/img_tc_gen_arch.png)
+<img src="../../../docs/assets/img_test_case.png" width="60%">
 
 ### Interface
 This component expects the following inputs and generates the following output.
@@ -41,5 +41,5 @@ The distribution of these metrics are as follows:
 ![img_tc_gen_fluency.png](../../assets/img_tc_gen_fluency.png)
 
 ## Getting Started
-Refer to this [README](https://github.com/AgentToolkit/agent-lifecycle-toolkit/blob/main/altk/post_request/test_case_generation_toolkit/README.md) for instructions on how to get started with the code.
+Refer to this [README](https://github.com/AgentToolkit/agent-lifecycle-toolkit/blob/main/altk/build_time/test_case_generation_toolkit/README.md) for instructions on how to get started with the code.
 See an example in action [here](https://github.com/AgentToolkit/agent-lifecycle-toolkit/blob/main/examples/testcase_generation_example.py).

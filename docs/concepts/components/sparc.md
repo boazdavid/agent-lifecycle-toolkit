@@ -142,4 +142,116 @@ These results demonstrate the reflector's strong ability to accurately identify 
 
 
 ## Getting Started
-Refer to this [README](https://github.com/AgentToolkit/agent-lifecycle-toolkit/blob/main/altk/pre_tool/sparc/README.md) for instructions on how to get started with the code. See an example in action [here]( https://github.com/AgentToolkit/agent-lifecycle-toolkit/blob/main/examples/langgraph_agent_sparc_example.py).
+
+### When it is recommended to use this component:
+
+- **Critical Applications**: Tool execution can change state, databases, or have significant consequences
+- **Complex Parameters**: Your tools have many parameters or complex parameter relationships
+- **Unit Conversions**: Tools require specific units/formats that can't be validated statically
+- **Parameter Validation**: You need to verify that parameters are grounded in conversation context
+- **Quality Assurance**: You want to catch hallucinated or incorrect tool calls before execution
+- **Production Systems**: Where tool call accuracy is critical for user experience
+- **Financial/Medical/Legal**: Domains where incorrect tool calls could have serious consequences
+
+#### Configuration Guidelines by Use Case:
+
+- **No parameters or simple parameters**: Use `Track.SYNTAX` for fast static validation only
+- **Single-turn or Multi-turn agentic conversations (performance-sensitive)**: Use `Track.FAST_TRACK` for basic semantic validation
+- **Single-turn or Multi-turn conversations (high accuracy)**: Use `Track.SLOW_TRACK` for comprehensive validation
+- **Unit conversion focus**: Use `Track.TRANSFORMATIONS_ONLY` for transformation-specific validation
+
+### Quick Start
+
+```python
+from altk.pre_tool.core import (
+    SPARCReflectionRunInput,
+    Track,
+    SPARCExecutionMode,
+)
+from altk.pre_tool.sparc.sparc import SPARCReflectionComponent
+from altk.core.toolkit import AgentPhase, ComponentConfig
+from langchain_core.messages import HumanMessage, AIMessage
+from altk.core.llm import get_llm
+
+
+# Build ComponentConfig with ValidatingLLMClient (REQUIRED)
+# NOTE: This example assumes the OPENAI_API_KEY environment variable is set
+def build_config():
+    """Build ComponentConfig with OpenAI ValidatingLLMClient."""
+    OPENAI_CLIENT = get_llm("openai.sync.output_val")  # ValidatingLLMClient
+    # Other validating LLMs: litellm.ollama.output_val, watsonx.output_val
+    return ComponentConfig(
+        llm_client=OPENAI_CLIENT(
+            model_name="o4-mini",
+        )
+    )
+
+
+# Initialize reflector with ComponentConfig and Track-based API
+config = build_config()
+reflector = SPARCReflectionComponent(
+    config=config,  # ComponentConfig with ValidatingLLMClient
+    track=Track.FAST_TRACK,  # Choose appropriate track
+    execution_mode=SPARCExecutionMode.ASYNC,
+)
+
+# Check initialization
+if reflector._initialization_error:
+    print(f"Failed to initialize: {reflector._initialization_error}")
+    exit(1)
+
+# Define your tool specification (OpenAI format)
+tool_specs = [{
+    "type": "function",
+    "function": {
+        "name": "send_email",
+        "description": "Send an email to recipients",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "to": {"type": "array", "items": {"type": "string"}},
+                "subject": {"type": "string"},
+                "body": {"type": "string"}
+            },
+            "required": ["to", "subject", "body"]
+        }
+    }
+}]
+
+# Prepare conversation context
+messages = [
+    HumanMessage(content="Send an email to team@company.com about the meeting"),
+    AIMessage(content="I'll send that email for you.")
+]
+
+# Tool call to validate (OpenAI format)
+tool_call = {
+    "id": "1",
+    "type": "function",
+    "function": {
+        "name": "send_email",
+        "arguments": '{"to": ["teams@company.com"], "subject": "Meeting Update", "body": "Meeting scheduled for tomorrow."}'
+    }
+}
+
+# Run reflection
+run_input = SPARCReflectionRunInput(
+    messages=messages,
+    tool_specs=tool_specs,
+    tool_calls=[tool_call]
+)
+
+result = reflector.process(run_input, phase=AgentPhase.RUNTIME)
+
+# Check results
+if result.output.reflection_result.decision == "approve":
+    print("✅ Tool call approved")
+else:
+    print("❌ Tool call rejected")
+    for issue in result.output.reflection_result.issues:
+        print(f"  - {issue.metric_name}: {issue.explanation}")
+```
+
+### Ready to get started?
+Go to our GitHub repo and run this [example](https://github.com/AgentToolkit/agent-lifecycle-toolkit/blob/main/examples/langgraph_agent_sparc_example.py) or get the code running by following the instructions in the [README](https://github.com/AgentToolkit/agent-lifecycle-toolkit/blob/main/altk/pre_tool/sparc/README.md).
+

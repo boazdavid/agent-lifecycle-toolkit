@@ -47,9 +47,99 @@ Additional results are reported in [1].
 ![rag_results](../../assets/img_ragrepair_eval.png)
 
 ## Getting Started
-Refer to this [README](https://github.com/AgentToolkit/agent-lifecycle-toolkit/blob/main/altk/post_tool/rag_repair/README.md) for instructions on how to get started with the code.
 
-See an example in action [here](https://github.com/AgentToolkit/agent-lifecycle-toolkit/blob/main/examples/rag_repair.ipynb).
+### When it is recommended to use this component:
+
+Although this component will technically work without related documents, this approach relies on having related documentation and/or troubleshooting documents such as blog posts or developer Q&As. Use cases where documentation is available or can be generated would benefit the most from this approach. Our evaluation suggests that this approach may be more effective for agents with smaller models as they may be less likely to already contain knowledge related to the tool. Similarly, tools where related documents are available but are not widely used in LLM training data would also benefit from this approach.
+
+Note that this component does not identify errors, it is expected that the agent knows that the tool call failed either through a failed tool call or LLM reflection.
+
+### Quick Start
+Here is how you can call the code generation based tool response processing:
+
+```Python
+from altk.core.toolkit import AgentPhase
+from altk.post_tool.rag_repair.rag_repair import RAGRepairComponent
+from altk.post_tool.rag_repair.rag_repair_config import RAGRepairComponentConfig
+from altk.post_tool.core.toolkit import RAGRepairRunInput, RAGRepairBuildInput
+
+# First, the RAG is set up in the BUILD phase
+local_docs_path = "/path/to/docs"
+repairer = RAGRepairComponent(docs_path=local_docs_path)
+repairer.process(RAGRepairBuildInput(), AgentPhase.BUILDTIME)
+
+# Example of failing command generated and run by agent
+nl_query = "Get all alerts in the otel-demo namespace"
+cmd = "kubectl get alerts -n otel-demo"
+# (cmd is run by agent and the resulting error is below)
+response = "error: the server doesn't have a resource type \"alerts\""
+
+# Use RAGRepair to repair command in the RUN phase
+input_data = RAGRepairRunInput(
+    nl_query=nl_query,
+    tool_call=cmd,
+    error=response
+)
+output = repairer.process(input_data, AgentPhase.RUNTIME)
+```
+
+There are two phases in using this component:
+1. `BUILD` - this is during agent setup, will ingest documents and create a local Chroma vector database for usage.
+2. `RUN` - this is during each failing tool call, will create a repair context and attempt to repair the tool call.
+
+### Configuration
+
+When creating `RAGRepairComponent` the only required parameter is `docs_path` which points to the local documents. Other configuration which includes LLM model, provider, and RAG settings can be configured by creating a `RAGRepairComponentConfig`.
+For example:
+
+```python
+from altk.core.llm import get_llm
+from altk.post_tool.rag_repair.rag_repair import RAGRepairComponent
+from altk.post_tool.rag_repair.rag_repair_config import RAGRepairComponentConfig
+
+OpenAIClient = get_llm("openai.sync")
+config = RAGRepairComponentConfig(
+    llm_client=OpenAIClient(api_key="<insert openai key here>"),
+    model_id="meta-llama/llama-3-405b-instruct",
+    persist_path=".chroma",
+    chunk_size=100
+)
+repairer = RAGRepairComponent(
+    docs_path="localdocspath",
+    config=config
+)
+```
+
+A non-comprehensive list of what can configured:
+- `retrieval_type`: str, can choose betwen `chroma` for embedding vector store or `bm25` ranking
+- `persist_path`: str, where the vector storage will be created in the local filesystem
+- `docs_filter`: str, can use this to return only `man` (documentation) or `doc` (other documents) from RAG
+- `chunk_size`: int, chunk size in character when splitting documents
+- `embedding_name`: str, embedding model used in vector storage
+
+Please see `RAGRepairComponentConfig` for the full list of configuration options.
+
+### Performance Considerations
+
+This component will need to ingest documents and has not been tested on very large documents. Doing so may incur performance costs during the vector store build process.
+
+This component has mostly been tested on Kubernetes commands/documents. Testing for other domains such as general web APIs or software engineering is future work.
+
+### Testing
+
+#### Running Tests
+```
+# Run all tests for post-tool-reflection
+uv run pytest tests/post-tool/ragrepair_test.py
+
+# Run RAGRepair-specific test
+uv run pytest tests/post-tool/ragrepair_test.py
+```
+
+
+### Ready to get started?
+Go to our GitHub repo and run this [example](https://github.com/AgentToolkit/agent-lifecycle-toolkit/blob/main/examples/rag_repair.ipynb) or get the code running by following the instructions in the [README](https://github.com/AgentToolkit/agent-lifecycle-toolkit/blob/main/altk/post_tool/rag_repair/README.md).
+
 
 ## References
 [1] Tsay, J., et al., "Repairing Tool Calls Using Post-tool Execution Reflection and RAG," arXiv preprint arXiv: (2025).  https://arxiv.org/abs/2510.17874

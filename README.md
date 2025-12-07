@@ -6,9 +6,10 @@
 <h4 align="center">Delivering plug-and-play, framework-agnostic technology to boost agents' performance</h4>
 
 ## What is ALTK?
-The Agent Lifecycle Toolkit helps agent builders create better performing agents by easily integrating our components into agent pipelines. The components help improve the performance of agents by addressing key gaps in various stages of the agent lifecycle, such as in reasoning, or tool calling errors, or output guardrails.
+The Agent Lifecycle Toolkit helps agent builders create better performing agents by easily integrating our components into agent pipelines. The components help improve the performance of agents by addressing key gaps in various stages of the agent lifecycle, such as in reasoning, or tool calling errors, or output guardrails. 
 
-![lifecycle.png](https://github.com/AgentToolkit/agent-lifecycle-toolkit/raw/main/docs/assets/lifecycle.png)
+👉 Read the launch [blog](https://research.ibm.com/blog/altk-agent-toolkit?previewToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTEsImlhdCI6MTc2MTc1MTg3MiwiZXhwIjoxNzYyMDExMDcyLCJzdWIiOiI0NTYwIn0.jfBYD6cOFSJXw0ZFPziCtGExsIvlc9uFp433KdO1CDE) to learn more about the vision and capabilities.
+
 
 
 ## Installation
@@ -78,8 +79,8 @@ print(result["messages"][-1].content)
 <!-- [TODO: add link] -->
 
 ## Features
-<!--
-[TODO: move up in the order of sections?] -->
+![lifecycle.png](https://github.com/AgentToolkit/agent-lifecycle-toolkit/raw/main/docs/assets/lifecycle.png)
+
 
 | Lifecycle Stage | Component                                                              | Purpose                                                                                                                                                                                                                                                                                                                   |
 |-----------------|------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -91,9 +92,9 @@ print(result["messages"][-1].content)
 | Post-tool       | [Silent Error Review](https://github.com/AgentToolkit/agent-lifecycle-toolkit/tree/main/altk/post_tool/silent_review) | *Is your agent ignoring subtle semantic tool errors?* Detect silent errors in tool responses and assess relevance, accuracy, and completeness.                                                                                                                                                                            |
 | Post-tool       | [RAG Repair](https://github.com/AgentToolkit/agent-lifecycle-toolkit/tree/main/altk/post_tool/rag_repair)             | *Is your agent not able to recover from tool call failures?* Repair failed tool calls using domain-specific documents via Retrieval-Augmented Generation.                                                                                                                                                                 |
 | Pre-response    | [Policy Guard](https://github.com/AgentToolkit/agent-lifecycle-toolkit/tree/main/altk/pre_response/policy_guard)                              | *Does your agent return responses that violate policies or instructions?* Ensure agent outputs comply with defined policies and repair them if needed.                                                                                                                                                                    |
-| Post-request   | [Tool Enrichment](https://github.com/AgentToolkit/agent-lifecycle-toolkit/tree/main/altk/post_request/tool_enrichment_toolkit)                              | *Does your tool have clear metadata or docstrings for the agent?* Generate tool and parameter descriptions to enhance tool calling. |
-| Post-request   | [Tool Test Generation](https://github.com/AgentToolkit/agent-lifecycle-toolkit/tree/main/altk/post_request/test_case_generation_toolkit)                    | *Has your agent been tested to call the correct tool with the right arguments?* Generate user utterances to test its behavior across a variety of scenarios. |
-| Post-request   | [Tool Validation](https://github.com/AgentToolkit/agent-lifecycle-toolkit/tree/main/altk/post_request/tool_validation_toolkit)                          | *Does your agent call the correct tool with the right arguments for these test cases?* Invoke the agent with test utterances and identify different types of tool-selection and argument-related errors. |
+| Build-Time   | [Tool Enrichment](https://github.com/AgentToolkit/agent-lifecycle-toolkit/tree/main/altk/build_time/tool_enrichment_toolkit)                              | *Does your tool have clear metadata or docstrings for the agent?* Generate tool and parameter descriptions to enhance tool calling. |
+| Build-Time   | [Tool Test Generation](https://github.com/AgentToolkit/agent-lifecycle-toolkit/tree/main/altk/build_time/test_case_generation_toolkit)                    | *Has your agent been tested to call the correct tool with the right arguments?* Generate user utterances to test its behavior across a variety of scenarios. |
+| Build-Time   | [Tool Validation](https://github.com/AgentToolkit/agent-lifecycle-toolkit/tree/main/altk/build_time/tool_validation_toolkit)                          | *Does your agent call the correct tool with the right arguments for these test cases?* Invoke the agent with test utterances and identify different types of tool-selection and argument-related errors. |
 
 ## Documentation
 

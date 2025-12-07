@@ -50,7 +50,7 @@ This component evaluates tool calls before execution, identifying potential issu
 - **Performance Optimized**: Configurable retry logic and parallel execution limits
 
 ### 🛠 Easy Integration
-- **Lifecylce Pattern**: Clean integration with existing agentic frameworks
+- **Lifecycle Pattern**: Clean integration with existing agentic frameworks
 - **Flexible Input**: Supports OpenAI-compatible tool specifications and conversation history
 - **Comprehensive Output**: Detailed validation results with explanations and corrections
 - **Track-Based API**: Pre-configured validation profiles for different use cases
@@ -793,4 +793,4 @@ uv run pytest tests/pre_tool/sparc/units_conversion_test.py
 Apache 2.0 - see LICENSE file for details.
 
 ## Under the Hood
-For more details on how the technology behind this component, the architecture and experimental results, refer to our [documentation](https://altk.ai).
+For more details on how the technology behind this component, the architecture and experimental results, refer to our [documentation](https://agenttoolkit.github.io/agent-lifecycle-toolkit/concepts/components/sparc/).
