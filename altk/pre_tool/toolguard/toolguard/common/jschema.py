@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
 
-from altk.pre_tool.toolguard.toolguard.common.ref import DocumentWithRef, Reference
+from .ref import DocumentWithRef, Reference
 
 
 class StrEnum(str, Enum):

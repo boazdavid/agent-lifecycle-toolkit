@@ -121,7 +121,7 @@ async def test_tool_guard_calculator_policy(work_dir: str):
     expected_tools = ["multiply_tool", "divide_tool", "add_tool"]
 
     # Basic structure assertions
-    assert build_output.root_dir
+    assert build_output.out_dir
     assert build_output.domain
     assert len(build_output.tools) == len(expected_tools)
 
