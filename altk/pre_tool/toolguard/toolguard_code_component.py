@@ -6,9 +6,9 @@ from typing import Set
 from langchain.tools import BaseTool
 
 from altk.core.toolkit import ComponentConfig, ComponentInput, AgentPhase, ComponentBase
-from .toolguard.data_types import MeleaSessionData
-from .toolguard import generate_guards_from_specs, ToolGuardSpec, ToolGuardsCodeGenerationResult, load_toolguards
-from .toolguard.runtime import IToolInvoker, ToolGuardsCodeGenerationResult
+from toolguard.data_types import MeleaSessionData
+from toolguard import generate_guards_from_specs, ToolGuardSpec, ToolGuardsCodeGenerationResult, load_toolguards
+from toolguard.runtime import IToolInvoker, ToolGuardsCodeGenerationResult
 
 logger = logging.getLogger(__name__)
 

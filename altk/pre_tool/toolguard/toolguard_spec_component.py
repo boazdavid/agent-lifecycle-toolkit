@@ -6,8 +6,8 @@ from pydantic import Field
 
 from ...core.llm import ValidatingLLMClient
 from ...core.toolkit import AgentPhase, ComponentBase, ComponentConfig, ComponentInput
-from .toolguard import ToolGuardSpec, generate_guard_specs
-from .toolguard.llm.i_tg_llm import I_TG_LLM
+from toolguard import ToolGuardSpec, generate_guard_specs
+from toolguard.llm.i_tg_llm import I_TG_LLM
 
 logger = logging.getLogger(__name__)
 

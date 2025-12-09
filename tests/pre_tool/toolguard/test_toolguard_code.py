@@ -22,11 +22,11 @@ from altk.pre_tool.toolguard import (
     ToolGuardCodeComponent,
     ToolGuardCodeBuildInput,
 )
-from altk.pre_tool.toolguard.toolguard.data_types import (
+from toolguard.data_types import (
     MeleaSessionData,
     load_tool_policy,
 )
-from altk.pre_tool.toolguard.toolguard.runtime import (
+from toolguard.runtime import (
     ToolFunctionsInvoker,
     ToolGuardsCodeGenerationResult,
     load_toolguard_code_result,
@@ -149,7 +149,7 @@ async def test_tool_guard_calculator_policy(work_dir: str):
             ToolGuardCodeRunOutput,
             toolguard_code.process(
                 ToolGuardCodeRunInput(
-                    generated_guard_dir=build_output.root_dir,
+                    generated_guard_dir=build_output.out_dir,
                     tool_name=tool_name,
                     tool_args=args,
                     tool_invoker=tool_invoker,
