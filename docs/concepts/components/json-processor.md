@@ -2,7 +2,7 @@
 
 If the agent calls tools which generate complex JSON objects as responses, this component will use LLM based Python code generation to process those responses and extract relevant information from them.
 
-See a demo of this component in action [here](https://ibm.box.com/v/altk-json-processor-demo).
+See a demo of this component in action [here](https://www.youtube.com/watch?v=gEo28uaeHv8).
 
 ## Overview
 The most common pattern for tool calling is to call a tool that returns some information. The agent then needs to process the tool response and extract the information from it. This information may be required either to respond back to the user or for the next step of the agent. When the tool responses are in JSON format, and the agent knows what information is needed from it, the code generation component prompts a LLM to generate Python code for parsing the JSON and extracting the required information. It executes the generated code and returns back the extracted content if the code execution succeeds.
@@ -100,8 +100,95 @@ Additional results are reported in [1].
 
 
 ## Getting Started
-Refer to this [README](https://github.com/AgentToolkit/agent-lifecycle-toolkit/blob/main/altk/post_tool/code_generation/README.md) for instructions on how to get started with the code.
-See an example in action [here](https://github.com/AgentToolkit/agent-lifecycle-toolkit/blob/main/examples/json_processor_getting_started.ipynb).
+
+### When it is recommended to Use This Component:
+
+Based on our evaluation, this approach to tool response processing is effective when the JSON tool responses are large and complex/highly nested and when the processing required is not trivial. For example, when the information to be extracted from the response is present as a single key, it might be easier for the model to extract it without code generation. But for more complex processing such as filtering and aggregation, code generation based processing is more accurate.
+
+
+### Quick Start
+Here is how you can call the code generation based tool response processing:
+
+```Python
+
+from altk.core.toolkit import AgentPhase
+from altk.post_tool.code_generation.code_generation import CodeGenerationComponent
+from altk.post_tool.core.toolkit import CodeGenerationRunInput, CodeGenerationRunOutput
+
+nl_query = "I need info about X from service Y."
+response = {...}  # this is some tool or api response in JSON format
+component = CodeGenerationComponent()
+
+input_data = CodeGenerationRunInput(
+    messages=[],
+    nl_query=nl_query,
+    tool_response=response
+)
+output = component.process(input_data, AgentPhase.RUNTIME)
+```
+
+
+### Configuration
+
+The LLM model, provider and inference settings can be configured when creating the `CodeGenerationComponent` by supplying the relevant parameters. For example:
+
+```python
+from altk.post_tool.code_generation.code_generation import CodeGenerationComponent
+
+component = CodeGenerationComponent(
+    model_id="meta-llama/llama-3-405b-instruct",
+    provider="openai.sync",  # can be one of: openai, watsonx, litellm
+    model_kwargs={
+        "temperature": 0.5,
+        "max_tokens": 1000,
+        "min_tokens": 20,
+        "seed": 42,
+    }
+)
+```
+
+- `use_docker_sandbox` when set to `True` will use the `DOCKER_HOST` in the environment variables to run the generated code in a container, setting to `False` will use a restricted Python interpreter locally. Running the generated code locally while faster carries some security risks.
+
+### Examples
+
+```python
+from altk.core.toolkit import AgentPhase
+from altk.post_tool.code_generation.code_generation import CodeGenerationComponent
+from altk.post_tool.core.toolkit import CodeGenerationRunInput, CodeGenerationRunOutput
+
+component = CodeGenerationComponent()
+
+input_data = CodeGenerationRunInput(
+    messages=[],
+    user_query=user_query,
+    tool_responses=response
+)
+output = component.process(input_data, AgentPhase.RUNTIME)
+```
+
+#### Input Format
+The class post_tool_reflection_toolkit.core.toolkit.CodeGenerationRunInput expects two main inputs as follows:
+
+1. `nl_query`: str, this is the natural language description hinting at what information needs to be extracted from the response. It can be the agent's thought corresponding to the tool call or the user query directly.
+
+2. `tool_response`: Any, this is the JSON response from the tool.
+
+#### Output Format
+The output is a `CodeGenerationRunOutput` object with a result property that contains the data that was extracted using the generated code.
+
+### Testing
+This component includes comprehensive test suites:
+#### Running Tests
+```
+# Run all tests
+uv run pytest tests/post-tool-reflection/
+
+# Run specific test categories
+uv run pytest tests/post-tool-reflection/codegen_test.py
+```
+
+### Ready to get started?
+Go to our GitHub repo and run this [example](https://github.com/AgentToolkit/agent-lifecycle-toolkit/blob/main/examples/json_processor_getting_started.ipynb) or get the code running by following the instructions in the [README](https://github.com/AgentToolkit/agent-lifecycle-toolkit/blob/main/altk/post_tool/code_generation/README.md).
 
 ## References
 [1] Kate, K., et al., "How Good Are LLMs at Processing Tool Outputs?," arXiv preprint arXiv: (2025).  https://arxiv.org/pdf/2510.15955

@@ -15,7 +15,7 @@ This component accepts as input the tool definition python file as string (consi
 
 The figure below shows the flow of tool enrichment.
 
-![img_tool_enrich_arch.png](../../assets/img_tool_enrich_arch.png)
+<img src="../../../docs/assets/img_tool_enrich.png" width="600">
 
 ### Interface
 This component expects the following input and generates the following output.
@@ -33,5 +33,5 @@ Tool Enrichment is extensively benchmarked on WxO tools. Following is the benchm
 
 
 ## Getting Started
-Refer to this [README](https://github.com/AgentToolkit/agent-lifecycle-toolkit/blob/main/altk/post_request/tool_enrichment_toolkit/README.md) for instructions on how to get started with the code.
+Refer to this [README](https://github.com/AgentToolkit/agent-lifecycle-toolkit/blob/main/altk/build_time/tool_enrichment_toolkit/README.md) for instructions on how to get started with the code.
 See an example in action [here](https://github.com/AgentToolkit/agent-lifecycle-toolkit/blob/main/examples/tool_enrichment_example.py).

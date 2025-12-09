@@ -45,3 +45,9 @@ This is the final stage before the agent sends a response back to the user. Its 
 Failure classes components in this stage may address include output formatting errors, missing information, response safety, violated policy guardrails, etc.
 
 ALTK includes the following components for this stage: [Policy Guard](components/policy-guard.md).
+
+## Build-Time
+
+This [stage](../../altk/build_time/README.md) occurs during the building of tools and agents and introduces modular capabilities to enhance and evaluate a tool. It helps in building, preparing, and validating tools for enterprise-grade agentic workflows. It focuses on improving tool semantics, generating test scenarios, and validating agent–tool interactions before deployment.
+
+ALTK includes the following components for this stage: [Tool Enrichment](components/tool-enrichment.md), [Test Case Generation](components/test-case-generation.md), and [Tool Validation](components/tool-validation.md).
